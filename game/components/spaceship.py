@@ -10,7 +10,7 @@ class Spaceship(Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = (SCREEN_WIDTH // 2) - 40
         self.rect.y = 500
-
+        
     def update(self, user_input):
         if user_input[pygame.K_a]:
             self.rect.x -= 10
