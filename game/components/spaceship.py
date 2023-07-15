@@ -1,16 +1,21 @@
 import pygame
 from pygame.sprite import Sprite
 
-from game.utils.constants import SPACESHIP, SCREEN_WIDTH, SCREEN_HEIGHT
+from game.utils.constants import SPACESHIP, SCREEN_WIDTH, SCREEN_HEIGHT, SHIP_WIDTH, SHIP_HEIGHT
 
 class Spaceship(Sprite):
+    SHIP_WITH = 40
+    SHIP_HEIGHT = 60
+    X_POS = (SCREEN_HEIGHT // 2) - SHIP_WIDTH
+    Y_POS = 500
+    SHIP_SPEED = 10
     def __init__(self):
         self.image = SPACESHIP
-        self.image = pygame.transform.scale(self.image, (40, 60))
+        self.image = pygame.transform.scale(self.image, (SHIP_WIDTH, SHIP_HEIGHT))
         self.rect = self.image.get_rect()
-        self.rect.x = (SCREEN_WIDTH // 2) - 40
-        self.rect.y = 500
-        
+        self.rect.x = self.X_POS
+        self.rect.y = self.Y_POS
+
     def update(self, user_input):
         if user_input[pygame.K_a]:
             self.rect.x -= 10
