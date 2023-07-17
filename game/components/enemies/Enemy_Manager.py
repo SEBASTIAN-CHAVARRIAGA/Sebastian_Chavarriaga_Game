@@ -1,8 +1,8 @@
 import pygame 
 from pygame.sprite import Sprite
-from random import randint
+from random import randint, choice
 
-from game.components.enemies.enemy import Enemy
+from game.components.enemies.enemy import Enemy, Enemy2
 
 class EnemyManager:
     def __init__(self):
@@ -19,6 +19,9 @@ class EnemyManager:
             enemy.draw(screen)
 
     def add_enemy(self):
-        if len(self.enemies) < 1:
-            enemy = Enemy() 
+        if len(self.enemies) < 5:
+            if randint(1, 10) <= 7:
+                enemy = Enemy()
+            else:
+                enemy = Enemy2()
             self.enemies.append(enemy)
