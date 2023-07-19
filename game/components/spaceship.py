@@ -1,22 +1,28 @@
 import pygame
 from pygame.sprite import Sprite
-
 from game.utils.constants import SPACESHIP, SCREEN_WIDTH, SCREEN_HEIGHT, SHIP_WIDTH, SHIP_HEIGHT
+from game.components.Bullets.bullet import Bullet
 
 class Spaceship(Sprite):
     SHIP_WITH = 40
     SHIP_HEIGHT = 60
-    X_POS = (SCREEN_HEIGHT // 2) - SHIP_WIDTH
-    Y_POS = 500
-    SHIP_SPEED = 10
+    COOLDOWN_TIME = 10000  
+
     def __init__(self):
+        super().__init__()
         self.image = SPACESHIP
         self.image = pygame.transform.scale(self.image, (SHIP_WIDTH, SHIP_HEIGHT))
         self.rect = self.image.get_rect()
-        self.rect.x = self.X_POS
-        self.rect.y = self.Y_POS
-
-    def update(self, user_input):
+        self.rect.x = (SCREEN_WIDTH // 2) - 40
+        self.rect.y = 500
+        self.angle = 0
+        self.rotating = False
+        self.last_rotate_time = 0
+        self.bullet_cooldown = 500  
+        self.last_shot_time = 0
+        self.type = 'player'
+        
+    def update(self, user_input, player_bullets):
         if user_input[pygame.K_a]:
             self.rect.x -= 10
             if self.rect.right < 0:
@@ -36,34 +42,39 @@ class Spaceship(Sprite):
         if user_input[pygame.K_s] and self.rect.bottom < SCREEN_HEIGHT:
             self.rect.y += 10
 
-        if user_input[pygame.K_a] and user_input[pygame.K_w]:
-            self.rect.x -= 10
-            self.rect.y -= 10
-            if self.rect.right < 0:
-                self.rect.x = SCREEN_WIDTH
-            if self.rect.top < 0:
-                self.rect.y = 0
-        if user_input[pygame.K_a] and user_input[pygame.K_s]:
-            self.rect.x -= 10
-            self.rect.y += 10
-            if self.rect.right < 0:
-                self.rect.x = SCREEN_WIDTH
-            if self.rect.bottom > SCREEN_HEIGHT:
-                self.rect.y = SCREEN_HEIGHT - self.rect.height
-        if user_input[pygame.K_d] and user_input[pygame.K_w]:
-            self.rect.x += 10
-            self.rect.y -= 10
-            if self.rect.left > SCREEN_WIDTH:
-                self.rect.x = -self.rect.width
-            if self.rect.top < 0:
-                self.rect.y = 0
-        if user_input[pygame.K_d] and user_input[pygame.K_s]:
-            self.rect.x += 10
-            self.rect.y += 10
-            if self.rect.left > SCREEN_WIDTH:
-                self.rect.x = -self.rect.width
-            if self.rect.bottom > SCREEN_HEIGHT:
-                self.rect.y = SCREEN_HEIGHT - self.rect.height
+        current_time = pygame.time.get_ticks()
+        if user_input[pygame.K_SPACE] and current_time - self.last_rotate_time >= self.COOLDOWN_TIME:
+            self.rotate(current_time)
+
+        current_time = pygame.time.get_ticks()
+        mouse_pressed = pygame.mouse.get_pressed()
+        if mouse_pressed[0] and current_time - self.last_shot_time >= self.bullet_cooldown:
+            self.shoot(player_bullets, current_time)
+
+    def rotate(self, current_time):
+        self.rotating = True
+        self.last_rotate_time = current_time
+
+
+    def shoot(self, player_bullets, current_time):
+        bullet = Bullet(self)
+        player_bullets.add(bullet)
+        self.last_shot_time = current_time
 
     def draw(self, screen):
-        screen.blit(self.image, self.rect)
+        if self.rotating:
+            self.angle += 10
+            if self.angle >= 360:
+                self.angle = 0
+                self.rotating = False
+            rotated_image = pygame.transform.rotate(self.image, self.angle)
+            new_rect = rotated_image.get_rect(center=self.rect.center)
+            screen.blit(rotated_image, new_rect)
+        else:
+            screen.blit(self.image, self.rect)
+
+        # Indicador de habilidad esquina superior izquierda
+        remaining_cooldown = max(0, self.COOLDOWN_TIME - (pygame.time.get_ticks() - self.last_rotate_time))
+        cooldown_percent = remaining_cooldown / self.COOLDOWN_TIME
+        cooldown_bar_width = int(cooldown_percent * 100)
+        pygame.draw.rect(screen, (255, 0, 0), (10, 10, cooldown_bar_width, 5))

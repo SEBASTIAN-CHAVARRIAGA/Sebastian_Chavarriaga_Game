@@ -1,45 +1,45 @@
 import pygame
+from random import randint
 from pygame.sprite import Sprite
-from random import randint, choice
-from game.utils.constants import ENEMY_1, ENEMY_2, SHIP_WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, SHIP_HEIGHT
-from game.components.Bullet.bullet import Bullet
-
-
+from game.utils.constants import ENEMY_1, ENEMY_2, SHIP_WIDTH, SHIP_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT
+from game.components.Bullets.bullet import Bullet
 class Enemy(Sprite):
     Y_POS = 20
     SPEED_X = 5
-    SPEED_Y = 1
+    SPEED_Y = 3
     MOV_X = {0: 'left', 1: 'right'}
+    IMAGE = {1: ENEMY_1, 2: ENEMY_2}
 
-    def __init__(self):
-        Sprite.__init__(self)
-        self.image = ENEMY_1
-        self.image = pygame.transform.scale(self.image, (SHIP_WIDTH, SHIP_HEIGHT))
+    def __init__(self, image_index=1, speed_x=SPEED_X, speed_y=SPEED_Y, move_x_for=[30, 100]):
+        super().__init__()
+        self.image = pygame.transform.scale(self.IMAGE[image_index], (SHIP_WIDTH, SHIP_HEIGHT))
         self.rect = self.image.get_rect()
         self.rect.x = randint(0, SCREEN_WIDTH)
         self.rect.y = self.Y_POS
 
-        self.speed_x = self.SPEED_X
-        self.speed_y = self.SPEED_Y
+        self.speed_x = speed_x
+        self.speed_y = speed_y
         self.movement_x = self.MOV_X[randint(0, 1)]
-        self.move_x_for = randint(30, 40)
+        self.move_x_for = randint(move_x_for[0], move_x_for[1])
         self.step = 0
-        self.type = 'enemy'
-        self.shooting_time = randint(30, 50)
 
     def update(self, enemies, game):
         self.rect.y += self.speed_y
-        self.shoot(game.bullet_manager)
-
         if self.movement_x == 'left':
             self.rect.x -= self.speed_x
-            self.change_movement_x()
-        elif self.movement_x == 'right':
+        else:
             self.rect.x += self.speed_x
-            self.change_movement_x()
+        self.change_movement_x()
 
         if self.rect.y >= SCREEN_HEIGHT:
             enemies.remove(self)
+
+    def shoot(self, bullet_manager):
+        current_time = pygame.time.get_ticks()
+        if self.shooting_time <= current_time:
+             bullet = Bullet(self)
+             bullet_manager.add_bullet(bullet)
+             self.shooting_time += randint(20,50)
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
@@ -49,48 +49,16 @@ class Enemy(Sprite):
         if (self.step >= self.move_x_for and self.movement_x == 'right') or (self.rect.x >= SCREEN_WIDTH - SHIP_WIDTH):
             self.movement_x = 'left'
             self.step = 0
-        elif (self.step >= self.move_x_for and self.movement_x == 'left') or (self.rect.x <= 0):
+
+        elif (self.step >= self.move_x_for and self.movement_x == 'left') or (self.rect.x <= 10):
             self.movement_x = 'right'
             self.step = 0
 
-
-    def shoot(self, bullet_manager):
-        current_time = pygame.time.get_ticks()
-        if self.shooting_time >= current_time:
-            bullet = Bullet(self)
-            bullet_manager.add_bullet(bullet)
-            self.shooting_time += randint(20, 50)
-
-class Enemy2(Sprite):
-    Y_POS = 20
-    SPEED_X = 8
-    SPEED_Y = 2
-
+class ENEMY_1(Enemy):
     def __init__(self):
-        self.image = ENEMY_2  
-        self.image = pygame.transform.scale(self.image, (SHIP_WIDTH, SHIP_HEIGHT))
-        self.rect = self.image.get_rect()
-        self.rect.x = randint(0, SCREEN_WIDTH)
-        self.rect.y = self.Y_POS
+        super().__init__(image_index=1)
+   
 
-        self.speed_x = self.SPEED_X
-        self.speed_y = self.SPEED_Y
-        self.direction = choice([-1, 1])
-        self.change_direction_after = randint(30, 60)
-        self.step = 0
-
-    def update(self, enemies):
-        self.rect.y += self.speed_y
-        self.rect.x += self.speed_x * self.direction
-
-        if self.rect.y >= SCREEN_HEIGHT:
-            enemies.remove(self)
-
-        self.step += 1
-        if self.step >= self.change_direction_after:
-            self.direction *= -1
-            self.change_direction_after = randint(30, 60)
-            self.step = 0
-
-    def draw(self, screen):
-        screen.blit(self.image, self.rect)
+class ENEMY_2(Enemy):
+     def __init__(self):
+        super().__init__(image_index=2)
