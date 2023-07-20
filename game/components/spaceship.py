@@ -1,6 +1,6 @@
 import pygame
 from pygame.sprite import Sprite
-from game.utils.constants import SPACESHIP, SCREEN_WIDTH, SCREEN_HEIGHT, SHIP_WIDTH, SHIP_HEIGHT
+from game.utils.constants import SPACESHIP, SCREEN_WIDTH, SCREEN_HEIGHT, SHIP_WIDTH, SHIP_HEIGHT, DEFAULT_TYPE
 from game.components.Bullets.bullet import Bullet
 
 class Spaceship(Sprite):
@@ -9,7 +9,6 @@ class Spaceship(Sprite):
     COOLDOWN_TIME = 10000  
 
     def __init__(self):
-        super().__init__()
         self.image = SPACESHIP
         self.image = pygame.transform.scale(self.image, (SHIP_WIDTH, SHIP_HEIGHT))
         self.rect = self.image.get_rect()
@@ -21,7 +20,9 @@ class Spaceship(Sprite):
         self.bullet_cooldown = 500  
         self.last_shot_time = 0
         self.type = 'player'
-        
+        self.power_up_type = DEFAULT_TYPE
+        self.has_power_up = False
+        self.power_time_up = 0
     def update(self, user_input, player_bullets):
         if user_input[pygame.K_a]:
             self.rect.x -= 10
@@ -59,7 +60,13 @@ class Spaceship(Sprite):
     def shoot(self, player_bullets, current_time):
         bullet = Bullet(self)
         player_bullets.add(bullet)
+        game.bullet_manager.add_bullet(bullet)  # Agregar la bala al BulletManager
         self.last_shot_time = current_time
+
+   
+    def set_image(self, size = (40, 60), image = SPACESHIP):
+                  self.image = image
+                  self.image = pygame.transform.scale(self.image, size)
 
     def draw(self, screen):
         if self.rotating:
