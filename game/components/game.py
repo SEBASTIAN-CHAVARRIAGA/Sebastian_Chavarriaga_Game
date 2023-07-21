@@ -1,10 +1,19 @@
 import pygame
+import os
+import game_over_menu
 
-from game.utils.constants import BG, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS, DEFAULT_TYPE
+from game.utils.constants import BG, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS, DEFAULT_TYPE, FONT_STYLE, HEART
+from pygame.locals import QUIT, KEYDOWN, K_RETURN
 from game.components.spaceship import Spaceship
+from random import randint
 from game.components.enemies.Enemy_Manager import EnemyManager
 from game.components.Bullets.bullet_manager import BulletManager
 from game.components.PowerUp.power_up_manager import PowerUpManager
+from game.components.asteroids.asteroid import Asteroid
+from game.components.asteroids.asteroid_manager import AsteroidManager
+from game.components.Boss.boss import Boss
+from game.components.Boss.boss_manager import BossManager
+
 
 class Game:
     def __init__(self):
@@ -21,20 +30,29 @@ class Game:
         self.enemy_manager = EnemyManager()
         self.bullet_manager = BulletManager()
         self.power_up_manager = PowerUpManager()
+        self.asteroid_manager = AsteroidManager()
+        self.boss_manager = BossManager()
         self.player_bullets = pygame.sprite.Group()
         self.enemy_bullets = pygame.sprite.Group()
+        self.asteroid_group = pygame.sprite.Group()
         self.score = 0
         self.max_score = 0
-        self.deaths = 0
+        self.deaths_count = 0
+        self.player_lives = 5 
+        self.boss = None  
+        self.spawn_boss = False
 
-    def player_die(self):
-        self.deaths += 1
-        if self.score > self.max_score:
-            self.max_score = self.score
-        self.score = 0  # Reiniciamos el puntaje al morir
-        self.playing = False
-        pygame.time.delay(1000)
-        self.restart_game()
+
+    def get_score(self):
+        return self.score
+    
+    def draw_lives(self, screen):
+        # Espaciado entre los íconos de vidas
+        spacing = 30
+
+        for i in range(self.player_lives):
+            # Dibuja el ícono de vida en la posición correspondiente
+            screen.blit(HEART, (10 + i * spacing, 30))
 
     def run(self):
         # Game loop: events - update - draw
@@ -53,10 +71,34 @@ class Game:
 
     def update(self):
         user_input = pygame.key.get_pressed()
+        self.player.update(user_input, self.bullet_manager)
         self.player.update(user_input, self.player_bullets)
         self.enemy_manager.update(self)
         self.bullet_manager.update(self)
         self.power_up_manager.update(self)
+        self.asteroid_manager.update(self)
+        self.boss_manager.update(self)
+        
+
+              # Verifica si el jugador se quedó sin vidas
+        if self.bullet_manager.player_lives <= 0:          
+             # Muestra el menú de Game Over con la información relevante
+            game_over_menu.game_over_screen(self.screen, self.score, self.max_score, self.deaths_count)
+        
+            # Limpia los elementos del juego antes de reiniciar
+            self.player_bullets.empty()
+            self.enemy_bullets.empty()
+            self.enemy_manager.reset()
+            self.bullet_manager.reset()
+            self.player.reset()
+
+            # Llama a una función separada para reiniciar el juego
+            self.restart_game()
+
+    def restart_game(self):
+        # Vuelve a inicializar la instancia de Game
+        new_game = Game()
+        new_game.run()
 
     def draw(self):
         self.clock.tick(FPS)
@@ -68,10 +110,14 @@ class Game:
         self.player_bullets.draw(self.screen)
         self.enemy_bullets.draw(self.screen)
         self.power_up_manager.draw(self.screen)
+        self.asteroid_manager.draw(self.screen)
+        self.draw_lives(self.screen)
         self.draw_power_up_time()
+        self.draw_score()
         pygame.display.update()
         pygame.display.flip()
-
+      
+            
     def draw_background(self):
         image = pygame.transform.scale(BG, (SCREEN_WIDTH, SCREEN_HEIGHT))
         image_height = image.get_height()
@@ -81,12 +127,6 @@ class Game:
             self.screen.blit(image, (self.x_pos_bg, self.y_pos_bg - image_height))
             self.y_pos_bg = 0
         self.y_pos_bg += self.game_speed
-
-    def restart_game(self):
-        self.enemy_manager.reset()
-        self.bullet_manager.reset()
-        self.power_up_manager.reset()
-        self.player.reset()
 
     def draw_power_up_time(self):
         if self.player.has_power_up:
@@ -100,3 +140,10 @@ class Game:
                 self.player.has_power_up = False
                 self.player.power_up_type = DEFAULT_TYPE
                 self.player.set_image()
+
+    def draw_score(self):
+        font = pygame.font.Font(FONT_STYLE, 30)
+        text = font.render(f'Score: {self.score}', True, (255, 255, 255))
+        text_rect = text.get_rect()
+        text_rect.center = (1000, 50)
+        self.screen.blit(text, text_rect)

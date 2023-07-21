@@ -20,6 +20,7 @@ spaceship_speed = 5
 
 def show_menu():
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+    
     pygame.display.set_caption("Menu Spaceship")
 
     font = pygame.font.Font(None, 36)

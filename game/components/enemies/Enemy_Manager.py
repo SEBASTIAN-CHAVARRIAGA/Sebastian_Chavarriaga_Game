@@ -1,27 +1,36 @@
-import pygame 
-from pygame.sprite import Sprite
-from random import randint, choice
+from game.components.enemies.enemy import Enemy
 
-from game.components.enemies.enemy import Enemy, Enemy2
+from random import randint
+
+
 
 class EnemyManager:
-    def __init__(self):
-        self.enemies = []
+    def __init__(self):   
+        self.enemies =[]
 
-    def update(self):
+    def update(self, game ):
         self.add_enemy()
-        
-        for enemy in self.enemies:
-            enemy.update(self.enemies)
 
-    def draw(self, screen):
+        for enemy in self.enemies:
+            enemy.update(self.enemies, game)
+
+    def draw(self,screen):
         for enemy in self.enemies:
             enemy.draw(screen)
 
+
     def add_enemy(self):
-        if len(self.enemies) < 5:
-            if randint(1, 10) <= 7:
-                enemy = Enemy()
-            else:
-                enemy = Enemy2()
+        enemy_type = randint(1,2)
+        if enemy_type == 1 :
+            enemy = Enemy()
+        else:
+            speed_x = 5 
+            speed_y = 2 
+            move_x_for = [50, 120]
+            enemy = Enemy(enemy_type, speed_x,speed_y,move_x_for)
+
+        if len(self.enemies) < 5 :
             self.enemies.append(enemy)
+            
+    def reset(self):
+        self.enemies.clear()

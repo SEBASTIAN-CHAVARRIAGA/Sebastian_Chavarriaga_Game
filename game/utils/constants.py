@@ -1,6 +1,7 @@
 import pygame
 import os
 
+
 # Global Constants
 TITLE = "Spaceships Game"
 SCREEN_HEIGHT = 600
@@ -24,10 +25,17 @@ HEART = pygame.image.load(os.path.join(IMG_DIR, 'Other/SmallHeart.png'))
 DEFAULT_TYPE = "default"
 SHIELD_TYPE = 'shield'
 
+BOSS = pygame.image.load(os.path.join(IMG_DIR, "bossI/final-boss.gif"))
+
 SPACESHIP = pygame.image.load(os.path.join(IMG_DIR, "Spaceship/spaceship.png"))
 SPACESHIP_SHIELD = pygame.image.load(os.path.join(IMG_DIR, "Spaceship/spaceship_shield.png"))
 BULLET = pygame.image.load(os.path.join(IMG_DIR, "Bullet/bullet_1.png"))
 
+ASTEROID_1 = pygame.image.load(os.path.join(IMG_DIR, "Asteroids/asteroid1.png"))
+ASTEROID_1 = pygame.transform.scale(ASTEROID_1, (100, 100))
+
+ASTEROID_2 = pygame.image.load(os.path.join(IMG_DIR, "Asteroids/asteroid2.png"))
+ASTEROID_2 = pygame.transform.scale(ASTEROID_2, (100, 100))
 
 BULLET_ENEMY = pygame.image.load(os.path.join(IMG_DIR, "Bullet/bullet_2.png"))
 ENEMY_1 = pygame.image.load(os.path.join(IMG_DIR, "Enemy/enemy_1.png"))
@@ -37,3 +45,9 @@ SHIP_WIDTH = 40
 SHIP_HEIGHT = 60
 
 FONT_STYLE = 'freesansbold.ttf'
+
+WINDOW_WIDTH = 1100
+WINDOW_HEIGHT = 600
+
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)

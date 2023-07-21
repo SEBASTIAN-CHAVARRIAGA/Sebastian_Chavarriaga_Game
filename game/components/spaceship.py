@@ -1,5 +1,6 @@
 import pygame
 from pygame.sprite import Sprite
+from game.utils.constants import WINDOW_HEIGHT, WINDOW_WIDTH
 from game.utils.constants import SPACESHIP, SCREEN_WIDTH, SCREEN_HEIGHT, SHIP_WIDTH, SHIP_HEIGHT, DEFAULT_TYPE
 from game.components.Bullets.bullet import Bullet
 
@@ -59,14 +60,15 @@ class Spaceship(Sprite):
 
     def shoot(self, player_bullets, current_time):
         bullet = Bullet(self)
-        player_bullets.add(bullet)
-        game.bullet_manager.add_bullet(bullet)  # Agregar la bala al BulletManager
+        player_bullets.add_bullet(bullet)
         self.last_shot_time = current_time
-
    
     def set_image(self, size = (40, 60), image = SPACESHIP):
                   self.image = image
                   self.image = pygame.transform.scale(self.image, size)
+    def reset(self):
+        self.rect.x = WINDOW_WIDTH // 2
+        self.rect.y = WINDOW_HEIGHT // 2
 
     def draw(self, screen):
         if self.rotating:
@@ -84,4 +86,4 @@ class Spaceship(Sprite):
         remaining_cooldown = max(0, self.COOLDOWN_TIME - (pygame.time.get_ticks() - self.last_rotate_time))
         cooldown_percent = remaining_cooldown / self.COOLDOWN_TIME
         cooldown_bar_width = int(cooldown_percent * 100)
-        pygame.draw.rect(screen, (255, 0, 0), (10, 10, cooldown_bar_width, 5))
+        pygame.draw.rect(screen, (255, 0, 0), (10, 20, cooldown_bar_width, 5))
